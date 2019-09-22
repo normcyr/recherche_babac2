@@ -1,0 +1,5 @@
+config.yml
+liste_sku.txt
+venv/
+*.pyc
+__pycache__
