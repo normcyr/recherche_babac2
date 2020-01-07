@@ -39,7 +39,10 @@ Then edit the `config.yml` file (**eg** `nano config.yml`) to include the proper
 
 Launch the search with the following command:
 
-`python recherche_babac2.py search text`
+
+```bash
+python recherche_babac2.py search text
+```
 
 For example:
 
