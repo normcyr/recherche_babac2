@@ -11,7 +11,9 @@ a sopel module to search the Cycle Babac catalogue
 2. Create a Python virutal environment using `virtualenv`
 
 `cd recherche_babac2`
+
 `virtualenv -p python3 venv`
+
 `source venv/bin/activate`
 
 3. Install the requirements
