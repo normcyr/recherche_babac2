@@ -214,7 +214,7 @@ def print_results(list_products):
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('search_text', help='indicate which term(s) you are using to search in the Babac catalogue', default='')
+    parser.add_argument('search_text', help='indicate which term(s) you are using to search in the Babac catalogue', default='', nargs='+')
     args = parser.parse_args()
 
     config_file = 'config.yml'
@@ -224,7 +224,8 @@ def main():
     text_pattern = re.compile('[\w0-9 \"()]+') # accept text, numbers and special characters ", ( and )
     price_pattern = re.compile('\d*[.]\d{2}')
 
-    search_text = args.search_text
+    search_text = ' '.join(args.search_text)
+    print('Searching for: \'{}\''.format(search_text))
 
     username, password, login_url = load_config(config_file)
     session = create_session(username, password, login_url, base_url)

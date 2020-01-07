@@ -30,11 +30,9 @@ Launch the search with the following command:
 
 `python recherche_babac2.py [search term]`
 
-*Right now, only a single word, or a catalog number, can be used to perform the search.*
-
 For example:
 
-`python recherche_babac2.py training`
+`python recherche_babac2.py training wheels`
 
 or
 
