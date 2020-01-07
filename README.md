@@ -1,6 +1,6 @@
 # Recherche Babac2
 
-a sopel module to search the Cycle Babac catalog
+a sopel module to search the Cycle Babac catalogue
 
 ## Installation
 
@@ -28,12 +28,12 @@ Then edit the `config.yml` file (**eg** `nano config.yml`) to include the proper
 
 Launch the search with the following command:
 
-`python recherche_babac2.py [search term]`
+`python recherche_babac2.py search text`
 
 For example:
 
 `python recherche_babac2.py training wheels`
 
-or
+or, using a catalogue number:
 
 `python recherche_babac2.py 22-150`
