@@ -1,24 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+'''
+recherche_babac2 - a sopel module to search the Cycle Babac catalog
+author: Norm1 <norm@normandcyr.com>
+
+follows the website structure as of 2020-01-08
+'''
+
+import os
 import requests
 from bs4 import BeautifulSoup
 import re
-import yaml
 import argparse
 from pathlib import Path
+from dotenv import load_dotenv
 
 
-def load_config(config_file):
+def load_config(env_path):
 
-    with config_file.open(mode='r') as config:
-        yml_file = yaml.safe_load(config)
+    load_dotenv(override=True)
 
-    username = yml_file['login']['username']
-    password = yml_file['login']['password']
-    login_url = yml_file['login']['url']
+    username = os.getenv('USERNAME')
+    password = os.getenv('PASSWORD')
+    base_url = os.getenv('BASE_URL')
+    login_url = os.getenv('LOGIN_URL')
 
-    return username, password, login_url
+    return username, password, base_url, login_url
 
 
 def create_session(username, password, login_url, base_url):
@@ -189,12 +197,16 @@ def build_product_info(item_sku, item_name, item_price, item_instock, item_rebat
 
 def print_results(list_products):
 
-    if len(list_products) > 1:
+    if list_products == None:
+        print('No product found')
+        exit(0)
+
+    elif len(list_products) > 1:
         print('{} items were found'.format(len(list_products)))
 
     elif len(list_products) == 1:
         print('A single item was found')
-
+        
     else:
         print('No product found')
         exit(0)
@@ -218,8 +230,7 @@ def main():
     parser.add_argument('search_text', help='indicate which term(s) you are using to search in the Babac catalogue', default='', nargs='+')
     args = parser.parse_args()
 
-    config_file = Path('.') / 'config.yml'
-    base_url = 'https://cyclebabac.com/'
+    env_path = Path('.') / '.env'
 
     sku_pattern = re.compile('\d{2}[-]?\d{3}$')  # accept 12-345 or 12345, but not 123456 or 1234
     text_pattern = re.compile('[\w0-9 \"()]+') # accept text, numbers and special characters ", ( and )
@@ -228,7 +239,7 @@ def main():
     search_text = ' '.join(args.search_text)
     print('Searching for: \'{}\''.format(search_text))
 
-    username, password, login_url = load_config(config_file)
+    username, password, base_url, login_url = load_config(env_path)
     session = create_session(username, password, login_url, base_url)
     result_page, single_result = search_item(session, search_text, base_url)
     soup_results = make_soup(result_page)
