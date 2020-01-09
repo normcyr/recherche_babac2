@@ -1,0 +1,2 @@
+include README.md
+include recherche_babac2/.env.example
