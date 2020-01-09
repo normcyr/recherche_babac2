@@ -197,12 +197,16 @@ def build_product_info(item_sku, item_name, item_price, item_instock, item_rebat
 
 def print_results(list_products):
 
-    if len(list_products) > 1:
+    if list_products == None:
+        print('No product found')
+        exit(0)
+
+    elif len(list_products) > 1:
         print('{} items were found'.format(len(list_products)))
 
     elif len(list_products) == 1:
         print('A single item was found')
-
+        
     else:
         print('No product found')
         exit(0)
