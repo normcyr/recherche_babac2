@@ -27,10 +27,10 @@ pip install -e .
 ## Setup the configuration file
 
 ```bash
-cp config.example.yml config.yml
+cp .env.example .env
 ```
 
-Then edit the `config.yml` file (**eg** `nano config.yml`) to include the proper credentials to log in to the Cycle Babac website.
+Then edit the `.env` file (**eg** `nano .env`) to include the proper credentials to log in to the Cycle Babac website.
 
 ## Perform a search
 
