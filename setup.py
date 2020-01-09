@@ -8,7 +8,7 @@ setup(
         'console_scripts': ['recherche_babac2=recherche_babac2.recherche_babac2:main'],
     },
     install_requires=[
-        'pyyaml',
+        'python-dotenv',
         'bs4',
         'requests',
         'lxml',
