@@ -2,4 +2,5 @@ config.yml
 liste_sku.txt
 venv/
 *.pyc
-__pycache__
+__pycache__/
+*.egg-info/
