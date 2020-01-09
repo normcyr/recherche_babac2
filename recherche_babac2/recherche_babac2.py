@@ -6,11 +6,12 @@ from bs4 import BeautifulSoup
 import re
 import yaml
 import argparse
+from pathlib import Path
 
 
 def load_config(config_file):
 
-    with open(config_file, 'r') as config:
+    with config_file.open(mode='r') as config:
         yml_file = yaml.safe_load(config)
 
     username = yml_file['login']['username']
@@ -217,7 +218,7 @@ def main():
     parser.add_argument('search_text', help='indicate which term(s) you are using to search in the Babac catalogue', default='', nargs='+')
     args = parser.parse_args()
 
-    config_file = 'config.yml'
+    config_file = Path('.') / 'config.yml'
     base_url = 'https://cyclebabac.com/'
 
     sku_pattern = re.compile('\d{2}[-]?\d{3}$')  # accept 12-345 or 12345, but not 123456 or 1234

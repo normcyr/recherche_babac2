@@ -1,17 +1,16 @@
 # Recherche Babac2
 
-a sopel module to search the Cycle Babac catalogue
+A Python3 module to search the Cycle Babac catalogue and return description, price and availability.
 
 ## Installation
 
 1. Clone the repository
 
-
 ```bash
 git clone https://github.com/normcyr/recherche_babac2
 ```
 
-2. Create a Python virutal environment using `virtualenv`
+2. Create a Python virtual environment using `virtualenv`
 
 ```bash
 cd recherche_babac2
@@ -19,15 +18,13 @@ virtualenv -p python3 venv
 source venv/bin/activate
 ```
 
-3. Install the requirements
-
+3. Install the module
 
 ```bash
-pip install -r requirements.txt
+pip install -e .
 ```
 
 ## Setup the configuration file
-
 
 ```bash
 cp config.example.yml config.yml
@@ -39,19 +36,18 @@ Then edit the `config.yml` file (**eg** `nano config.yml`) to include the proper
 
 Launch the search with the following command:
 
-
 ```bash
-python recherche_babac2.py search text
+recherche_babac2 search text
 ```
 
 For example:
 
 ```bash
-python recherche_babac2.py training wheels
+recherche_babac2 training wheels
 ```
 
 or, using a catalogue number:
 
 ```bash
-python recherche_babac2.py 22-150
+recherche_babac2 22-150
 ```
