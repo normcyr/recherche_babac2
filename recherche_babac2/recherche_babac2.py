@@ -214,14 +214,14 @@ def print_results(list_products):
         print('No product found')
         exit(0)
 
-    print('| #Babac | ' + 'Description'.ljust(45, ' ') + ' | Price    | In stock? |')
-    print('| ------ | ' + '-'*45 + ' | -------- | --------- |')
+    print('| #Babac | ' + 'Description'.ljust(45, ' ') + ' | Price     | In stock? |')
+    print('| ------ | ' + '-'*45 + ' | --------- | --------- |')
 
     for item in list_products:
         print('| {} | {} | {}$ | {} |'.format(
           item['sku'],
           item['name'].ljust(45, ' ')[:45],
-          item['price'].rjust(7),
+          item['price'].rjust(8),
           item['stock'].ljust(9)
           )
         )
