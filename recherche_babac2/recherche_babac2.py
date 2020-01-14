@@ -158,19 +158,22 @@ def parse_info(item, sku_pattern, soup_results):
     item_name = item.find('h3', {'class': 'kw-details-title text-custom-child'}).text.lstrip().rstrip()
     item_prices = item.find('span', {'class': 'price'})
 
-    if item_prices.find('del') == None:
+    try:
+        if item_prices.find('del') == None:
+            item_rebate = False
+            item_price = item_prices.find('span', {'class': 'woocommerce-Price-amount amount'}).text.strip('$')
+        else:
+            item_rebate = True
+            price_pattern = re.compile('\d*[.]\d{2}')
+            item_price = item_prices.find_all('span', {'class': 'woocommerce-Price-amount amount'})[1].text.strip('$')
+            item_price = re.findall(price_pattern, item_price)[0]
+    except:
         item_rebate = False
-        item_price = item_prices.find('span', {'class': 'woocommerce-Price-amount amount'}).text.strip('$')
-
-    else:
-        item_rebate = True
-        price_pattern = re.compile('\d*[.]\d{2}')
-        item_price = item_prices.find_all('span', {'class': 'woocommerce-Price-amount amount'})[1].text.strip('$')
-        item_price = re.findall(price_pattern, item_price)[0]
+        item_price = "NA"
 
     item_instock = 'Don\'t know'
 
-    is_instock = soup_results.find('div', {'class': 'mg-brand-wrapper mg-brand-wrapper-stock'}).text.lstrip().rstrip()[20:]
+    is_instock = item.find('div', {'class': 'mg-brand-wrapper mg-brand-wrapper-stock'}).text.lstrip().rstrip()[20:]
     if is_instock == 'In stock':
         item_instock = 'Yes'
     elif is_instock == 'Out of stock':
@@ -206,7 +209,7 @@ def print_results(list_products):
 
     elif len(list_products) == 1:
         print('A single item was found')
-        
+
     else:
         print('No product found')
         exit(0)
