@@ -7,7 +7,7 @@ def readme():
 
 setup(
     name='Recherche Babac2',
-    version='0.0.1',
+    version='0.0.2',
     description='A Python3 module to search the Cycle Babac catalogue and return description, price and availability.',
     long_description=readme(),
     long_description_content_type='text/markdown',
