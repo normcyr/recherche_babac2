@@ -27,10 +27,10 @@ pip install -e .
 ## Setup the configuration file
 
 ```bash
-cp .env.example .env
+cp recherche_babac2/.env.example recherche_babac2/.env
 ```
 
-Then edit the `.env` file (**eg** `nano .env`) and change the value of the `USERNAME` and `PASSWORD` variables to the proper credentials to log in to the Cycle Babac website.
+Then edit the `.env` file (**eg** `nano recherche_babac2/.env`) and change the value of the `USERNAME` and `PASSWORD` variables to the proper credentials to log in to the Cycle Babac website.
 
 ## Perform a search
 
