@@ -16,7 +16,6 @@ import argparse
 from pathlib import Path
 from dotenv import load_dotenv
 from recherche_babac2 import _version
-#from _version import __version__
 
 
 def load_config(env_path):
@@ -90,7 +89,6 @@ def parse_results(soup_results, single_result, search_text, sku_pattern, text_pa
         else:
             search_type = 'error'
             list_products = None
-            # do something to stop the parsing
 
         list_products = parse_single_result(soup_results, search_text, sku_pattern, price_pattern)
 
