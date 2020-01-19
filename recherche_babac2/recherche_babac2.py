@@ -15,6 +15,8 @@ import re
 import argparse
 from pathlib import Path
 from dotenv import load_dotenv
+from recherche_babac2 import _version
+#from _version import __version__
 
 
 def load_config(env_path):
@@ -231,6 +233,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('search_text', help='indicate which term(s) you are using to search in the Babac catalogue', default='', nargs='+')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + _version.__version__)
     args = parser.parse_args()
 
     env_path = Path('.') / '.env'

@@ -1,13 +1,20 @@
 from setuptools import setup
 
+
 def readme():
     with open('README.md', 'r') as f:
         return f.read()
 
 
+version = {}
+with open('recherche_babac2/_version.py', 'r') as fp:
+    exec(fp.read(), version)
+
+
 setup(
     name='Recherche Babac2',
-    version='0.0.2',
+    #version='0.0.2',
+    version=version['__version__'],
     description='A Python3 module to search the Cycle Babac catalogue and return description, price and availability.',
     long_description=readme(),
     long_description_content_type='text/markdown',
