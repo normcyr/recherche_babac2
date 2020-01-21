@@ -16,7 +16,25 @@ import argparse
 from pathlib import Path
 from dotenv import load_dotenv
 from recherche_babac2 import _version
-#from _version import __version__
+
+
+env_path = Path('.') / '.env'
+
+sku_pattern = re.compile('\d{2}[-]?\d{3}$')  # accept 12-345 or 12345, but not 123456 or 1234
+text_pattern = re.compile('[\w0-9 \"()]+') # accept text, numbers and special characters ", ( and )
+price_pattern = re.compile('\d*[.]\d{2}')
+
+
+def do_the_search(search_text):
+
+    username, password, base_url, login_url = load_config(env_path)
+    session = create_session(username, password, login_url, base_url)
+    result_page, single_result = search_item(session, search_text, base_url)
+    soup_results = make_soup(result_page)
+
+    list_products, search_type = parse_results(soup_results, single_result, search_text, sku_pattern, text_pattern, price_pattern)
+
+    return list_products
 
 
 def load_config(env_path):
@@ -236,21 +254,10 @@ def main():
     parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + _version.__version__)
     args = parser.parse_args()
 
-    env_path = Path('.') / '.env'
-
-    sku_pattern = re.compile('\d{2}[-]?\d{3}$')  # accept 12-345 or 12345, but not 123456 or 1234
-    text_pattern = re.compile('[\w0-9 \"()]+') # accept text, numbers and special characters ", ( and )
-    price_pattern = re.compile('\d*[.]\d{2}')
-
     search_text = ' '.join(args.search_text)
     print('Searching for: \'{}\''.format(search_text))
 
-    username, password, base_url, login_url = load_config(env_path)
-    session = create_session(username, password, login_url, base_url)
-    result_page, single_result = search_item(session, search_text, base_url)
-    soup_results = make_soup(result_page)
-
-    list_products, search_type = parse_results(soup_results, single_result, search_text, sku_pattern, text_pattern, price_pattern)
+    list_products = do_the_search(search_text)
 
     print_results(list_products)
 

@@ -13,7 +13,6 @@ with open('recherche_babac2/_version.py', 'r') as fp:
 
 setup(
     name='Recherche Babac2',
-    #version='0.0.2',
     version=version['__version__'],
     description='A Python3 module to search the Cycle Babac catalogue and return description, price and availability.',
     long_description=readme(),
