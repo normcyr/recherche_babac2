@@ -8,7 +8,6 @@ author: Norm1 <norm@normandcyr.com>
 follows the website structure as of 2020-03-03
 '''
 
-import os
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -21,7 +20,7 @@ from recherche_babac2 import _version
 config_file_path = Path('.') / 'config.yml'
 
 sku_pattern = re.compile('\d{2}[-]?\d{3}$')  # accept 12-345 or 12345, but not 123456 or 1234
-text_pattern = re.compile('[\w0-9 \-]+') # accept text, numbers, but no special character except -
+text_pattern = re.compile('[\w0-9 \-]+')  # accept text, numbers, but no special character except -
 price_pattern = re.compile('\d*[.]\d{2}')
 
 
@@ -68,8 +67,8 @@ def create_session(username, password, login_url, base_url):
                    'Referer': base_url,
                    'User-Agent': 'Atelier Biciklo'
                    }
-        data={
-            'log':username, 'pwd':password, 'wp-submit':'Log In',
+        data = {
+            'log': username, 'pwd': password, 'wp-submit': 'Log In',
         }
         response = session.post(login_url, headers=headers, data=data, allow_redirects=False)
 
@@ -86,7 +85,7 @@ def search_item(session, search_text, base_url):
     product_cat = ''
     post_type = 'product'
 
-    if search_text != None:
+    if search_text is not None:
         search_dict = {'product_cat': product_cat, 'post_type': post_type, 's': search_text}
     else:
         search_dict = {}
@@ -111,7 +110,7 @@ def make_soup(result_page):
 
 def parse_results(soup_results, single_result, item_page_url, search_text, sku_pattern, text_pattern, price_pattern):
 
-    if single_result == True:
+    if single_result:
         if sku_pattern.match(search_text):
             search_type = 'sku_only'
             search_text = search_text[:2] + '-' + search_text[-3:]
@@ -142,14 +141,12 @@ def parse_single_result(soup_results, item_page_url, search_text, sku_pattern, p
     item_name = soup_results.title.text[:-14]
     item_prices = soup_results.find('p', {'class': 'price'})
 
-
-    if item_prices.find('del') == None:
+    if item_prices.find('del') is None:
         item_rebate = False
         item_price = item_prices.find('span', {'class': 'woocommerce-Price-amount amount'}).text
 
     else:
         item_rebate = True
-        price_pattern = re.compile('\d*[.]\d{2}')
         item_price = item_prices.find_all('span', {'class': 'woocommerce-Price-amount amount'})[1].text
         item_price = re.findall(price_pattern, item_price)[0]
 
@@ -191,12 +188,11 @@ def parse_info(item, sku_pattern, soup_results):
     item_page_url = item.parent['href']
 
     try:
-        if item_prices.find('del') == None:
+        if item_prices.find('del') is None:
             item_rebate = False
             item_price = item_prices.find('span', {'class': 'woocommerce-Price-amount amount'}).text.strip('$')
         else:
             item_rebate = True
-            price_pattern = re.compile('\d*[.]\d{2}')
             item_price = item_prices.find_all('span', {'class': 'woocommerce-Price-amount amount'})[1].text.strip('$')
             item_price = re.findall(price_pattern, item_price)[0]
     except:
@@ -233,7 +229,7 @@ def build_product_info(item_sku, item_name, item_price, item_instock, item_rebat
 
 def print_results(list_products):
 
-    if list_products == None:
+    if list_products is None:
         print('No product found')
         exit(0)
 
@@ -248,16 +244,15 @@ def print_results(list_products):
         exit(0)
 
     print('| #Babac | ' + 'Description'.ljust(45, ' ') + ' | Price     | In stock? |')
-    print('| ------ | ' + '-'*45 + ' | --------- | --------- |')
+    print('| ------ | ' + '-' * 45 + ' | --------- | --------- |')
 
     for item in list_products:
-        print('| {} | {} | {}$ | {} |'.format(
-          item['sku'],
-          item['name'].ljust(45, ' ')[:45],
-          item['price'].rjust(8),
-          item['stock'].ljust(9),
-          )
-        )
+        print('| {} | {} | {}$ | {} |'.format(item['sku'],
+                                              item['name'].ljust(45, ' ')[:45],
+                                              item['price'].rjust(8),
+                                              item['stock'].ljust(9),
+                                              )
+              )
 
 
 def main():
