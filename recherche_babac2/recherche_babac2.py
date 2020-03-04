@@ -5,48 +5,57 @@
 recherche_babac2 - a sopel module to search the Cycle Babac catalog
 author: Norm1 <norm@normandcyr.com>
 
-follows the website structure as of 2020-01-08
+follows the website structure as of 2020-03-03
 '''
 
 import os
 import requests
 from bs4 import BeautifulSoup
 import re
+import yaml
 import argparse
 from pathlib import Path
-from dotenv import load_dotenv
 from recherche_babac2 import _version
 
 
-env_path = Path('.') / '.env'
+config_file_path = Path('.') / 'config.yml'
 
 sku_pattern = re.compile('\d{2}[-]?\d{3}$')  # accept 12-345 or 12345, but not 123456 or 1234
-text_pattern = re.compile('[\w0-9 \"()]+') # accept text, numbers and special characters ", ( and )
+text_pattern = re.compile('[\w0-9 \-]+') # accept text, numbers, but no special character except -
 price_pattern = re.compile('\d*[.]\d{2}')
 
 
-def do_the_search(search_text):
+class BabacSearch:
 
-    username, password, base_url, login_url = load_config(env_path)
-    session = create_session(username, password, login_url, base_url)
-    result_page, single_result = search_item(session, search_text, base_url)
-    soup_results, item_page_url = make_soup(result_page)
+    base_url = 'https://cyclebabac.com/'
+    login_url = 'https://cyclebabac.com/wp-login.php'
 
-    list_products, search_type = parse_results(soup_results, single_result, item_page_url, search_text, sku_pattern, text_pattern, price_pattern)
+    def __init__(self, username, password):
 
-    return list_products
+        self.username = username
+        self.password = password
 
 
-def load_config(env_path):
+    def do_the_search(self, search_text):
 
-    load_dotenv(override=True)
+        session = create_session(self.username, self.password, self.login_url, self.base_url)
+        result_page, single_result = search_item(session, search_text, self.base_url)
+        soup_results, item_page_url = make_soup(result_page)
 
-    username = os.getenv('USERNAME')
-    password = os.getenv('PASSWORD')
-    base_url = os.getenv('BASE_URL')
-    login_url = os.getenv('LOGIN_URL')
+        list_products, search_type = parse_results(soup_results, single_result, item_page_url, search_text, sku_pattern, text_pattern, price_pattern)
 
-    return username, password, base_url, login_url
+        return list_products
+
+
+def load_config(config_file_path):
+
+    with config_file_path.open(mode='r') as config_file:
+        config_data = yaml.safe_load(config_file)
+
+    username = config_data['username']
+    password = config_data['password']
+
+    return username, password
 
 
 def create_session(username, password, login_url, base_url):
@@ -257,11 +266,16 @@ def main():
     args = parser.parse_args()
 
     search_text = ' '.join(args.search_text)
-    print('Searching for: \'{}\''.format(search_text))
 
-    list_products = do_the_search(search_text)
+    if re.match(sku_pattern, search_text) or re.match(text_pattern, search_text):
+        print('Searching for: \'{}\''.format(search_text))
 
-    print_results(list_products)
+        username, password = load_config(config_file_path)
+        recherche = BabacSearch(username, password)
+        list_products = recherche.do_the_search(search_text)
+        print_results(list_products)
+    else:
+        print('Please avoid using special characters.')
 
 
 if __name__ == '__main__':

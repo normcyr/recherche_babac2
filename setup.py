@@ -37,6 +37,7 @@ setup(
         'bs4',
         'requests',
         'lxml',
+        'pyyaml',
     ],
     zip_safe=False,
     include_package_data=True,
