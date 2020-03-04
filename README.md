@@ -30,7 +30,7 @@ python setup.py install
 cp config.yml.example config.yml
 ```
 
-Then edit the `config.yml` file (**eg** `nano config.yml`) and change the value of the `username` and `password` variables to the proper credentials to log in to the Cycle Babac website.
+Then edit the `config.yml` file (*eg* `nano config.yml`) and change the value of the `username` and `password` variables to the proper credentials to log in to the Cycle Babac website.
 
 ## Perform a search
 

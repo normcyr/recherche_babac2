@@ -35,16 +35,17 @@ class BabacSearch:
         self.username = username
         self.password = password
 
-
     def do_the_search(self, search_text):
 
-        session = create_session(self.username, self.password, self.login_url, self.base_url)
-        result_page, single_result = search_item(session, search_text, self.base_url)
-        soup_results, item_page_url = make_soup(result_page)
+        list_products = []
+        session, loggedin = create_session(self.username, self.password, self.login_url, self.base_url)
 
-        list_products, search_type = parse_results(soup_results, single_result, item_page_url, search_text, sku_pattern, text_pattern, price_pattern)
+        if loggedin:
+            result_page, single_result = search_item(session, search_text, self.base_url)
+            soup_results, item_page_url = make_soup(result_page)
+            list_products, search_type = parse_results(soup_results, single_result, item_page_url, search_text, sku_pattern, text_pattern, price_pattern)
 
-        return list_products
+        return list_products, loggedin
 
 
 def load_config(config_file_path):
@@ -73,10 +74,11 @@ def create_session(username, password, login_url, base_url):
         response = session.post(login_url, headers=headers, data=data, allow_redirects=False)
 
         if loggedin_confirmation in response.headers['Set-Cookie']:
-            return session
+            loggedin = True
         else:
-            print('Could not log in. Exiting.')
-            exit(0)
+            loggedin = False
+
+    return session, loggedin
 
 
 def search_item(session, search_text, base_url):
@@ -272,8 +274,11 @@ def main():
 
         username, password = load_config(config_file_path)
         recherche = BabacSearch(username, password)
-        list_products = recherche.do_the_search(search_text)
-        print_results(list_products)
+        list_products, loggedin = recherche.do_the_search(search_text)
+        if loggedin:
+            print_results(list_products)
+        else:
+            print('Failed login.')
     else:
         print('Please avoid using special characters.')
 
