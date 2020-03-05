@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-'''
+"""
 recherche_babac2 - a sopel module to search the Cycle Babac catalog
 author: Norm1 <norm@normandcyr.com>
 
 follows the website structure as of 2020-03-03
-'''
+"""
 
 import requests
 from bs4 import BeautifulSoup
@@ -17,17 +17,21 @@ from pathlib import Path
 from recherche_babac2 import _version
 
 
-config_file_path = Path('.') / 'config.yml'
+config_file_path = Path(".") / "config.yml"
 
-sku_pattern = re.compile('\d{2}[-]?\d{3}$')  # accept 12-345 or 12345, but not 123456 or 1234
-text_pattern = re.compile('[\w0-9 \-]+')  # accept text, numbers, but no special character except -
-price_pattern = re.compile('\d*[.]\d{2}')
+sku_pattern = re.compile(
+    "\d{2}[-]?\d{3}$"
+)  # accept 12-345 or 12345, but not 123456 or 1234
+text_pattern = re.compile(
+    "[\w0-9 \-]+"
+)  # accept text, numbers, but no special character except -
+price_pattern = re.compile("\d*[.]\d{2}")
 
 
 class BabacSearch:
 
-    base_url = 'https://cyclebabac.com/'
-    login_url = 'https://cyclebabac.com/wp-login.php'
+    base_url = "https://cyclebabac.com/"
+    login_url = "https://cyclebabac.com/wp-login.php"
 
     def __init__(self, username, password):
 
@@ -37,42 +41,59 @@ class BabacSearch:
     def do_the_search(self, search_text):
 
         list_products = []
-        session, loggedin = create_session(self.username, self.password, self.login_url, self.base_url)
+        session, loggedin = create_session(
+            self.username, self.password, self.login_url, self.base_url
+        )
 
         if loggedin:
-            result_page, single_result = search_item(session, search_text, self.base_url)
+            result_page, single_result = search_item(
+                session, search_text, self.base_url
+            )
             soup_results, item_page_url = make_soup(result_page)
-            list_products, search_type = parse_results(soup_results, single_result, item_page_url, search_text, sku_pattern, text_pattern, price_pattern)
+            list_products, search_type = parse_results(
+                soup_results,
+                single_result,
+                item_page_url,
+                search_text,
+                sku_pattern,
+                text_pattern,
+                price_pattern,
+            )
 
         return list_products, loggedin
 
 
 def load_config(config_file_path):
 
-    with config_file_path.open(mode='r') as config_file:
+    with config_file_path.open(mode="r") as config_file:
         config_data = yaml.safe_load(config_file)
 
-    username = config_data['username']
-    password = config_data['password']
+    username = config_data["username"]
+    password = config_data["password"]
 
     return username, password
 
 
 def create_session(username, password, login_url, base_url):
 
-    loggedin_confirmation = 'wordpress_logged_in_'
+    loggedin_confirmation = "wordpress_logged_in_"
 
     with requests.Session() as session:
-        headers = {'Cookie': 'wordpress_test_cookie=WP+Cookie+check',
-                   'Referer': base_url,
-                   'User-Agent': 'Atelier Biciklo'
-                   }
-        data = {
-            'log': username, 'pwd': password, 'wp-submit': 'Log In',
+        headers = {
+            "Cookie": "wordpress_test_cookie=WP+Cookie+check",
+            "Referer": base_url,
+            "User-Agent": "Atelier Biciklo",
         }
-        response = session.post(login_url, headers=headers, data=data, allow_redirects=False)
+        data = {
+            "log": username,
+            "pwd": password,
+            "wp-submit": "Log In",
+        }
+        response = session.post(
+            login_url, headers=headers, data=data, allow_redirects=False
+        )
 
-        if loggedin_confirmation in response.headers['Set-Cookie']:
+        if loggedin_confirmation in response.headers["Set-Cookie"]:
             loggedin = True
         else:
             loggedin = False
@@ -82,11 +103,15 @@ def create_session(username, password, login_url, base_url):
 
 def search_item(session, search_text, base_url):
 
-    product_cat = ''
-    post_type = 'product'
+    product_cat = ""
+    post_type = "product"
 
     if search_text is not None:
-        search_dict = {'product_cat': product_cat, 'post_type': post_type, 's': search_text}
+        search_dict = {
+            "product_cat": product_cat,
+            "post_type": post_type,
+            "s": search_text,
+        }
     else:
         search_dict = {}
 
@@ -102,64 +127,88 @@ def search_item(session, search_text, base_url):
 
 def make_soup(result_page):
 
-    soup_results = BeautifulSoup(result_page.text, 'lxml')
+    soup_results = BeautifulSoup(result_page.text, "lxml")
     item_page_url = result_page.url
 
     return soup_results, item_page_url
 
 
-def parse_results(soup_results, single_result, item_page_url, search_text, sku_pattern, text_pattern, price_pattern):
+def parse_results(
+    soup_results,
+    single_result,
+    item_page_url,
+    search_text,
+    sku_pattern,
+    text_pattern,
+    price_pattern,
+):
 
     if single_result:
         if sku_pattern.match(search_text):
-            search_type = 'sku_only'
-            search_text = search_text[:2] + '-' + search_text[-3:]
+            search_type = "sku_only"
+            search_text = search_text[:2] + "-" + search_text[-3:]
         elif text_pattern.match(search_text):
-            search_type = 'single_text'
+            search_type = "single_text"
         else:
-            search_type = 'error'
+            search_type = "error"
             list_products = None
 
-        list_products = parse_single_result(soup_results, item_page_url, search_text, sku_pattern, price_pattern)
+        list_products = parse_single_result(
+            soup_results, item_page_url, search_text, sku_pattern, price_pattern
+        )
 
     else:
         if text_pattern.match(search_text):
-            search_type = 'multiple_text'
-            list_products = parse_multiple_results(soup_results, search_text, sku_pattern, price_pattern)
+            search_type = "multiple_text"
+            list_products = parse_multiple_results(
+                soup_results, search_text, sku_pattern, price_pattern
+            )
         else:
-            search_type = 'error'
+            search_type = "error"
             list_products = None
 
     return list_products, search_type
 
 
-def parse_single_result(soup_results, item_page_url, search_text, sku_pattern, price_pattern):
+def parse_single_result(
+    soup_results, item_page_url, search_text, sku_pattern, price_pattern
+):
 
     list_products = []
 
-    item_sku = soup_results.find('span', {'class': 'sku'}).text
+    item_sku = soup_results.find("span", {"class": "sku"}).text
     item_name = soup_results.title.text[:-14]
-    item_prices = soup_results.find('p', {'class': 'price'})
+    item_prices = soup_results.find("p", {"class": "price"})
 
-    if item_prices.find('del') is None:
+    if item_prices.find("del") is None:
         item_rebate = False
-        item_price = item_prices.find('span', {'class': 'woocommerce-Price-amount amount'}).text
+        item_price = item_prices.find(
+            "span", {"class": "woocommerce-Price-amount amount"}
+        ).text
 
     else:
         item_rebate = True
-        item_price = item_prices.find_all('span', {'class': 'woocommerce-Price-amount amount'})[1].text
+        item_price = item_prices.find_all(
+            "span", {"class": "woocommerce-Price-amount amount"}
+        )[1].text
         item_price = re.findall(price_pattern, item_price)[0]
 
-    is_instock = soup_results.find('span', {'class': 'stock_wrapper'}).span.text.lstrip().rstrip()
+    is_instock = (
+        soup_results.find("span", {"class": "stock_wrapper"})
+        .span.text.lstrip()
+        .rstrip()
+    )
 
-    if is_instock == 'In stock':
-        item_instock = 'Yes'
-    elif is_instock == 'Out of stock':
-        item_instock = 'No'
+    if is_instock == "In stock":
+        item_instock = "Yes"
+    elif is_instock == "Out of stock":
+        item_instock = "No"
     else:
-        item_instock = 'Don\'t know'
+        item_instock = "Don't know"
 
-    product_info = build_product_info(item_sku, item_name, item_price, item_instock, item_rebate, item_page_url)
+    product_info = build_product_info(
+        item_sku, item_name, item_price, item_instock, item_rebate, item_page_url
+    )
 
     list_products.append(product_info)
 
@@ -170,7 +219,7 @@ def parse_multiple_results(soup_results, search_text, sku_pattern, price_pattern
 
     list_products = []
 
-    section_products = soup_results.find_all('div', {'class': 'kw-details clearfix'})
+    section_products = soup_results.find_all("div", {"class": "kw-details clearfix"})
 
     for item in section_products:
         product_info = parse_info(item, sku_pattern, soup_results)
@@ -181,91 +230,121 @@ def parse_multiple_results(soup_results, search_text, sku_pattern, price_pattern
 
 def parse_info(item, sku_pattern, soup_results):
 
-    item_sku = item.find('div', {'class': 'mg-brand-wrapper mg-brand-wrapper-sku'}).text.lstrip().rstrip()
+    item_sku = (
+        item.find("div", {"class": "mg-brand-wrapper mg-brand-wrapper-sku"})
+        .text.lstrip()
+        .rstrip()
+    )
     item_sku = re.findall(sku_pattern, item_sku)[0]
-    item_name = item.find('h3', {'class': 'kw-details-title text-custom-child'}).text.lstrip().rstrip()
-    item_prices = item.find('span', {'class': 'price'})
-    item_page_url = item.parent['href']
+    item_name = (
+        item.find("h3", {"class": "kw-details-title text-custom-child"})
+        .text.lstrip()
+        .rstrip()
+    )
+    item_prices = item.find("span", {"class": "price"})
+    item_page_url = item.parent["href"]
 
     try:
-        if item_prices.find('del') is None:
+        if item_prices.find("del") is None:
             item_rebate = False
-            item_price = item_prices.find('span', {'class': 'woocommerce-Price-amount amount'}).text.strip('$')
+            item_price = item_prices.find(
+                "span", {"class": "woocommerce-Price-amount amount"}
+            ).text.strip("$")
         else:
             item_rebate = True
-            item_price = item_prices.find_all('span', {'class': 'woocommerce-Price-amount amount'})[1].text.strip('$')
+            item_price = item_prices.find_all(
+                "span", {"class": "woocommerce-Price-amount amount"}
+            )[1].text.strip("$")
             item_price = re.findall(price_pattern, item_price)[0]
     except:
         item_rebate = False
         item_price = "NA"
 
-    item_instock = 'Don\'t know'
+    item_instock = "Don't know"
 
-    is_instock = item.find('div', {'class': 'mg-brand-wrapper mg-brand-wrapper-stock'}).text.lstrip().rstrip()[20:]
-    if is_instock == 'In stock':
-        item_instock = 'Yes'
-    elif is_instock == 'Out of stock':
-        item_instock = 'No'
+    is_instock = (
+        item.find("div", {"class": "mg-brand-wrapper mg-brand-wrapper-stock"})
+        .text.lstrip()
+        .rstrip()[20:]
+    )
+    if is_instock == "In stock":
+        item_instock = "Yes"
+    elif is_instock == "Out of stock":
+        item_instock = "No"
     else:
-        item_instock = 'Don\'t know'
+        item_instock = "Don't know"
 
-    product_info = build_product_info(item_sku, item_name, item_price, item_instock, item_rebate, item_page_url)
+    product_info = build_product_info(
+        item_sku, item_name, item_price, item_instock, item_rebate, item_page_url
+    )
 
     return product_info
 
 
-def build_product_info(item_sku, item_name, item_price, item_instock, item_rebate, item_page_url):
+def build_product_info(
+    item_sku, item_name, item_price, item_instock, item_rebate, item_page_url
+):
 
-    product_info = {'sku': item_sku,
-                    'name': item_name,
-                    'price': item_price,
-                    'stock': item_instock,
-                    'rebate': str(item_rebate),
-                    'page url': item_page_url,
-                    }
+    product_info = {
+        "sku": item_sku,
+        "name": item_name,
+        "price": item_price,
+        "stock": item_instock,
+        "rebate": str(item_rebate),
+        "page url": item_page_url,
+    }
 
-    return(product_info)
+    return product_info
 
 
 def print_results(list_products):
 
     if list_products is None:
-        print('No product found')
+        print("No product found")
         exit(0)
 
     elif len(list_products) > 1:
-        print('{} items were found'.format(len(list_products)))
+        print("{} items were found".format(len(list_products)))
 
     elif len(list_products) == 1:
-        print('A single item was found')
+        print("A single item was found")
 
     else:
-        print('No product found')
+        print("No product found")
         exit(0)
 
-    print('| #Babac | ' + 'Description'.ljust(45, ' ') + ' | Price     | In stock? |')
-    print('| ------ | ' + '-' * 45 + ' | --------- | --------- |')
+    print("| #Babac | " + "Description".ljust(45, " ") + " | Price     | In stock? |")
+    print("| ------ | " + "-" * 45 + " | --------- | --------- |")
 
     for item in list_products:
-        print('| {} | {} | {}$ | {} |'.format(item['sku'],
-                                              item['name'].ljust(45, ' ')[:45],
-                                              item['price'].rjust(8),
-                                              item['stock'].ljust(9),
-                                              )
-              )
+        print(
+            "| {} | {} | {}$ | {} |".format(
+                item["sku"],
+                item["name"].ljust(45, " ")[:45],
+                item["price"].rjust(8),
+                item["stock"].ljust(9),
+            )
+        )
 
 
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('search_text', help='indicate which term(s) you are using to search in the Babac catalogue', default='', nargs='+')
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + _version.__version__)
+    parser.add_argument(
+        "search_text",
+        help="indicate which term(s) you are using to search in the Babac catalogue",
+        default="",
+        nargs="+",
+    )
+    parser.add_argument(
+        "-v", "--version", action="version", version="%(prog)s " + _version.__version__
+    )
     args = parser.parse_args()
 
-    search_text = ' '.join(args.search_text)
+    search_text = " ".join(args.search_text)
 
     if re.match(sku_pattern, search_text) or re.match(text_pattern, search_text):
-        print('Searching for: \'{}\''.format(search_text))
+        print("Searching for: '{}'".format(search_text))
 
         username, password = load_config(config_file_path)
         recherche = BabacSearch(username, password)
@@ -273,10 +352,10 @@ def main():
         if loggedin:
             print_results(list_products)
         else:
-            print('Failed login.')
+            print("Failed login.")
     else:
-        print('Please avoid using special characters.')
+        print("Please avoid using special characters.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

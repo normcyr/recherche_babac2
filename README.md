@@ -1,3 +1,5 @@
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 # Recherche Babac2
 
 A Python3 module to search the Cycle Babac catalogue and return description, price and availability.

@@ -1,5 +1,4 @@
-requests==2.22.0
-bs4==0.0.1
-lxml==4.4.2
-python-dotenv==0.10.3
-PyYAML==5.3
+requests
+bs4
+lxml
+pyyaml
