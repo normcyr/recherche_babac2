@@ -50,7 +50,7 @@ class BabacSearch:
                 session, search_text, self.base_url
             )
             soup_results, item_page_url = make_soup(result_page)
-            list_products, search_type = parse_results(
+            list_products, search_type, multiple_pages = parse_results(
                 soup_results,
                 single_result,
                 item_page_url,
@@ -60,7 +60,7 @@ class BabacSearch:
                 price_pattern,
             )
 
-        return list_products, loggedin
+        return list_products, loggedin, multiple_pages, item_page_url
 
 
 def load_config(config_file_path):
@@ -144,6 +144,7 @@ def parse_results(
 ):
 
     if single_result:
+        multiple_pages = False
         if sku_pattern.match(search_text):
             search_type = "sku_only"
             search_text = search_text[:2] + "-" + search_text[-3:]
@@ -160,14 +161,14 @@ def parse_results(
     else:
         if text_pattern.match(search_text):
             search_type = "multiple_text"
-            list_products = parse_multiple_results(
+            list_products, multiple_pages = parse_multiple_results(
                 soup_results, search_text, sku_pattern, price_pattern
             )
         else:
             search_type = "error"
             list_products = None
 
-    return list_products, search_type
+    return list_products, search_type, multiple_pages
 
 
 def parse_single_result(
@@ -221,11 +222,19 @@ def parse_multiple_results(soup_results, search_text, sku_pattern, price_pattern
 
     section_products = soup_results.find_all("div", {"class": "kw-details clearfix"})
 
+    number_of_results = soup_results.find(
+        "p", {"class": "woocommerce-result-count"}
+    ).text
+    if "all" in number_of_results:
+        multiple_pages = False
+    else:
+        multiple_pages = True
+
     for item in section_products:
         product_info = parse_info(item, sku_pattern, soup_results)
         list_products.append(product_info)
 
-    return list_products
+    return list_products, multiple_pages
 
 
 def parse_info(item, sku_pattern, soup_results):
@@ -297,34 +306,42 @@ def build_product_info(
     return product_info
 
 
-def print_results(list_products):
+def print_results(list_products, multiple_pages, item_page_url):
 
     if list_products is None:
         print("No product found")
         exit(0)
 
-    elif len(list_products) > 1:
-        print("{} items were found".format(len(list_products)))
+    elif len(list_products) >= 1:
 
-    elif len(list_products) == 1:
-        print("A single item was found")
+        if len(list_products) == 1:
+            print("A single item was found")
+
+        elif len(list_products) > 1 and multiple_pages == False:
+            print("{} items were found".format(len(list_products)))
+
+        elif len(list_products) > 1 and multiple_pages == True:
+            print("Lots of items were found. Printing the first 24 items")
+            print("More results can be inspected here: {}".format(item_page_url))
+
+        print(
+            "| #Babac | " + "Description".ljust(45, " ") + " | Price     | In stock? |"
+        )
+        print("| ------ | " + "-" * 45 + " | --------- | --------- |")
+
+        for item in list_products:
+            print(
+                "| {} | {} | {}$ | {} |".format(
+                    item["sku"],
+                    item["name"].ljust(45, " ")[:45],
+                    item["price"].rjust(8),
+                    item["stock"].ljust(9),
+                )
+            )
 
     else:
         print("No product found")
         exit(0)
-
-    print("| #Babac | " + "Description".ljust(45, " ") + " | Price     | In stock? |")
-    print("| ------ | " + "-" * 45 + " | --------- | --------- |")
-
-    for item in list_products:
-        print(
-            "| {} | {} | {}$ | {} |".format(
-                item["sku"],
-                item["name"].ljust(45, " ")[:45],
-                item["price"].rjust(8),
-                item["stock"].ljust(9),
-            )
-        )
 
 
 def main():
@@ -348,9 +365,14 @@ def main():
 
         username, password = load_config(config_file_path)
         recherche = BabacSearch(username, password)
-        list_products, loggedin = recherche.do_the_search(search_text)
+        (
+            list_products,
+            loggedin,
+            multiple_pages,
+            item_page_url,
+        ) = recherche.do_the_search(search_text)
         if loggedin:
-            print_results(list_products)
+            print_results(list_products, multiple_pages, item_page_url)
         else:
             print("Failed login.")
     else:
