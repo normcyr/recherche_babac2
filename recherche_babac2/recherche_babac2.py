@@ -244,7 +244,10 @@ def parse_info(item, sku_pattern, soup_results):
         .text.lstrip()
         .rstrip()
     )
-    item_sku = re.findall(sku_pattern, item_sku)[0]
+    try:
+        item_sku = re.findall(sku_pattern, item_sku)[0]
+    except IndexError:
+        item_sku = 'N/A   '
     item_name = (
         item.find("h3", {"class": "kw-details-title text-custom-child"})
         .text.lstrip()
@@ -265,9 +268,9 @@ def parse_info(item, sku_pattern, soup_results):
                 "span", {"class": "woocommerce-Price-amount amount"}
             )[1].text.strip("$")
             item_price = re.findall(price_pattern, item_price)[0]
-    except:
+    except IndexError:
         item_rebate = False
-        item_price = "NA"
+        item_price = "N/A"
 
     item_instock = "Don't know"
 
