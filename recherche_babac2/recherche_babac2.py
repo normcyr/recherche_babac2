@@ -270,7 +270,7 @@ def parse_info(item, sku_pattern, soup_results):
                 "span", {"class": "woocommerce-Price-amount amount"}
             )[1].text.strip("$")
             item_price = re.findall(price_pattern, item_price)[0]
-    except IndexError:
+    except (IndexError, AttributeError):
         item_rebate = False
         item_price = "N/A"
 
@@ -322,12 +322,13 @@ def print_results(list_products, multiple_pages, item_page_url):
         if len(list_products) == 1:
             print("A single item was found")
 
-        elif len(list_products) > 1 and multiple_pages == False:
-            print("{} items were found".format(len(list_products)))
+        else:
 
-        elif len(list_products) > 1 and multiple_pages == True:
-            print("Lots of items were found. Printing the first 24 items")
-            print("More results can be inspected here: {}".format(item_page_url))
+            if multiple_pages:
+                print("Lots of items were found. Printing the first 24 items")
+                print("More results can be inspected here: {}".format(item_page_url))
+            else:
+                print("{} items were found".format(len(list_products)))
 
         print(
             "| #Babac | " + "Description".ljust(45, " ") + " | Price     | In stock? |"
