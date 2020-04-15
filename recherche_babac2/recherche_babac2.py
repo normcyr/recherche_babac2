@@ -194,6 +194,8 @@ def parse_single_result(
         )[1].text
         item_price = re.findall(price_pattern, item_price)[0]
 
+    item_price = item_price.strip('$')
+
     is_instock = (
         soup_results.find("span", {"class": "stock_wrapper"})
         .span.text.lstrip()
