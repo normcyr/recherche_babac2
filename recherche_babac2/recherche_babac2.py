@@ -194,7 +194,7 @@ def parse_single_result(
         )[1].text
         item_price = re.findall(price_pattern, item_price)[0]
 
-    item_price = item_price.strip('$')
+    item_price = item_price.strip("$")
 
     is_instock = (
         soup_results.find("span", {"class": "stock_wrapper"})
@@ -224,17 +224,23 @@ def parse_multiple_results(soup_results, search_text, sku_pattern, price_pattern
 
     section_products = soup_results.find_all("div", {"class": "kw-details clearfix"})
 
-    number_of_results = soup_results.find(
-        "p", {"class": "woocommerce-result-count"}
-    ).text
-    if "all" in number_of_results:
-        multiple_pages = False
-    else:
-        multiple_pages = True
+    try:
+        number_of_results = soup_results.find(
+            "p", {"class": "woocommerce-result-count"}
+        ).text
 
-    for item in section_products:
-        product_info = parse_info(item, sku_pattern, soup_results)
-        list_products.append(product_info)
+        if "all" in number_of_results:
+            multiple_pages = False
+        else:
+            multiple_pages = True
+
+        for item in section_products:
+            product_info = parse_info(item, sku_pattern, soup_results)
+            list_products.append(product_info)
+
+    except AttributeError:
+        multiple_pages = False
+        list_products = None
 
     return list_products, multiple_pages
 
@@ -249,7 +255,7 @@ def parse_info(item, sku_pattern, soup_results):
     try:
         item_sku = re.findall(sku_pattern, item_sku)[0]
     except IndexError:
-        item_sku = 'N/A   '
+        item_sku = "N/A   "
     item_name = (
         item.find("h3", {"class": "kw-details-title text-custom-child"})
         .text.lstrip()
