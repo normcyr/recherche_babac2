@@ -60,6 +60,10 @@ class BabacSearch:
                 price_pattern,
             )
 
+        else:
+            multiple_pages = None
+            item_page_url = None
+            
         return list_products, loggedin, multiple_pages, item_page_url
 
 
